@@ -115,7 +115,9 @@ class Client:
     def download_and_save(self, path=".", download_all_files=False):
         """Download single file and save to a given path"""
 
-        if not os.path.exists(""):
+        path = Path(path)
+        
+        if not path.exists():
             logger.error(f"Path does not exist - {path}")
             return
 
