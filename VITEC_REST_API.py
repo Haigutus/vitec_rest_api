@@ -47,8 +47,8 @@ class Client:
 
         session = Session()
         session.auth = HttpNtlmAuth(username=username, password=password)
-        response = session.get(server)
-        logger.info(f"Created connection to {server} as {username} with status {response.status_code} {response.reason}")
+        #response = session.get(server)
+        logger.info(f"Created connection to {server} as {username}")# with status {response.status_code} {response.reason}")
         self.session = session
         self.base_url = server
 
@@ -56,8 +56,8 @@ class Client:
     def download(self):
         """Download single file"""
 
-        logger.info("Downloading single file")
-        response = self.session.get(f"{self.base_url}/FileTransfer/download")
+        logger.info(f"Downloading file from {self.base_url}")
+        response = self.session.get(f"{self.base_url}/download")
 
         logger.debug(response.headers)
         logger.info(f"Response status {response.status_code} {response.reason}")
@@ -69,8 +69,8 @@ class Client:
         Download all available files.
         All files in Aiolos export folder will be added to a zip file and then downloaded in one request
         """
-        logger.info("Downloading single file")
-        response = self.session.get(f"{self.base_url}/FileTransfer/downloadall")
+        logger.info(f"Downloading all files from {self.base_url}")
+        response = self.session.get(f"{self.base_url}/downloadall")
         logger.debug(response.headers)
         logger.info(f"Response status {response.status_code} {response.reason}")
 
@@ -84,9 +84,9 @@ class Client:
 
         assert type(file_object) is bytes, "file_object needs to be bytes"
 
-        logger.info(f"Uploading {file_name} to {folder}")
+        logger.info(f"Uploading {file_name} to {folder}@{self.base_url}")
 
-        query = f"{self.base_url}/FileTransfer/upload?filename={file_name}&dir={folder}"
+        query = f"{self.base_url}/upload?filename={file_name}&dir={folder}"
         response = self.session.post(query, data=file_object, headers={"Content-Type": "multipart/form-data"})
 
         logger.debug(response.headers)
@@ -110,15 +110,13 @@ class Client:
             logger.info(f"Pattern {glob_pattern} Uploading - {file_path.absolute()} to {upload_folder}")
             self.upload(file_object=file_path.open("rb").read(), file_name=str(file_path), folder=upload_folder)
 
-
-
     def download_and_save(self, path=".", download_all_files=False):
         """Download single file and save to a given path"""
 
         path = Path(path)
-        
+
         if not path.exists():
-            logger.error(f"Path does not exist - {path}")
+            logger.error(f"Path does not exist - {path.absolute()}")
             return
 
         if download_all_files:
@@ -147,9 +145,9 @@ if __name__ == "__main__":
 
     # TEST
     base_url = "https://AiolosCustomerData.vitec.net"
+    
+    # Set username and password testing
     username = ""
     password = ""
 
     client = Client(base_url, username, password)
-    
-    client.download_and_save()
